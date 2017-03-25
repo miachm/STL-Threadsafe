@@ -16,44 +16,38 @@ namespace std
 
             priority_queue() {}
             priority_queue(int64_t tam) : lineal_container<T>(tam){}
-            priority_queue(const std::priority_queue<T> &cola) : Cola(cola){}
+            priority_queue(const std::priority_queue<T> &q) : queue(q){}
 
         private:
-            std::priority_queue<T> Cola;
-            std::mutex Cerrojo;
-            std::condition_variable Variable;
-            std::condition_variable Variable_Push;
-            int64_t tam_max = -1;
+            std::priority_queue<T> queue;
 
             bool empty_nothreadsafe() const noexcept override
             {
-                return Cola.empty();
+                return queue.empty();
             }
-
-            // Idem que la anterior pero con un límite de tiempo, lanza excepción si se cumple el tiempo y no ha sido despertado
 
             void pop_nothreadsafe(T& element) override
             {
-                element = Cola.top();
-                Cola.pop();
+                element = queue.top();
+                queue.pop();
             }
 
             void push_nothreadsafe(const T& element) override
             {
-                Cola.push(element);
+                queue.push(element);
             }
 
-            void push_nothreadsafe(T && elemento) override
+            void push_nothreadsafe(T && element) override
             {
-                Cola.push(std::move(elemento));
+                queue.push(std::move(element));
             }
 
             void top_nothreadsafe(T& element) const override
             {
-                element = Cola.top();
+                element = queue.top();
             }
 
-            size_t size_nothreadsafe() const noexcept override {return Cola.size();}
+            size_t size_nothreadsafe() const noexcept override {return queue.size();}
 
         };
     }

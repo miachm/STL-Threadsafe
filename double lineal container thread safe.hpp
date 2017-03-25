@@ -16,7 +16,7 @@ namespace std
 
             bool try_back(T& element) const
             {
-                unique_lock<std::mutex> e(lineal_container<T>::Cerrojo);
+                unique_lock<std::mutex> e(lineal_container<T>::lock);
 
                 if (lineal_container<T>::empty_nothreadsafe()) return false;
                 else
@@ -28,18 +28,18 @@ namespace std
 
             void wait_back(T &element)
             {
-                unique_lock<std::mutex> e(lineal_container<T>::Cerrojo);
+                unique_lock<std::mutex> e(lineal_container<T>::lock);
                 lineal_container<T>::consumer_enterprotocol(e);
                 lineal_container<T>::back_nothreadsafe(element);
             }
 
             template<class Rep,class Period>
-            void wait_back(T &elemento,const std::chrono::duration<Rep, Period>& rel_time)
+            void wait_back(T &element,const std::chrono::duration<Rep, Period>& rel_time)
             {
-                unique_lock<std::mutex> e(lineal_container<T>::Cerrojo);
+                unique_lock<std::mutex> e(lineal_container<T>::lock);
 
                 lineal_container<T>::consumer_enterprotocol(e);
-                lineal_container<T>::back_nothreadsafe(elemento);
+                lineal_container<T>::back_nothreadsafe(element);
                 //consumer_exitprotocol(e);
             }
         };

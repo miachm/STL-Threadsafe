@@ -5,6 +5,7 @@
 #include <chrono>
 #include <exception>
 #include <thread>
+
 namespace std
 {
     namespace threadsafe
@@ -23,12 +24,12 @@ namespace std
         template<class T>
         class lineal_container
         {
-            int64_t tam_max = -1;
+            uint64_t tam_max = std::numeric_limits<uint64_t>::max();
             std::condition_variable Consumer_Variable;
             std::condition_variable Producer_Variable;
 
             protected:
-            mutable std::mutex Cerrojo;
+            mutable std::mutex lock;
             virtual bool empty_nothreadsafe() const noexcept = 0;
             virtual void push_nothreadsafe(const T &elemento) = 0;
             virtual void push_nothreadsafe(T && elemento) = 0;
@@ -36,11 +37,10 @@ namespace std
             virtual void top_nothreadsafe(T & elemento) const = 0;
             virtual size_t size_nothreadsafe() const noexcept = 0;
 
-            // Espero a que se cumpla un determinado predicado (por ejemplo, hasta que el contenedor esté vacío
-            // El primer argumento es el mutex actual
-            // El segundo argumento es la condiction variable que le tiene que despertar
-            // El tercero es el predicado que tiene que evaluar, por ejemplo la función  bool empty_nothreadsafe()
-
+            // Wait for a
+            // The first argument is the current mutex
+            // The second argument is the condiction variable
+            // Third is the condition that has to evaluate, for example, wait for a new item
 
             void waitSomething(std::unique_lock<std::mutex> &e,std::condition_variable &Condicion,
                                bool (lineal_container<T>::*predicado)() const)
@@ -51,30 +51,27 @@ namespace std
                 }
             }
 
-            // Idem que la anterior pero con un límite de tiempo, lanza excepción si se cumple el tiempo y no ha sido despertado
-
             template<class Rep,class Period>
             void waitSomething(std::unique_lock<std::mutex> &e,std::condition_variable &Condicion,
                                bool (lineal_container<T>::*predicado)()const,
                                const std::chrono::duration<Rep, Period>& rel_time)
             {
-                auto tiempo = std::chrono::steady_clock::now();
+                auto time = std::chrono::steady_clock::now();
 
                 while (((*this).*predicado)())
                 {
-                    if (Condicion.wait_until(e,tiempo+rel_time) == std::cv_status::timeout)
+                    if (Condicion.wait_until(e,time+rel_time) == std::cv_status::timeout)
                     {
                         throw Time_Expired(std::this_thread::get_id());
                     }
                 }
             }
 
-            bool limite_activado() const { return tam_max >= 0;}
             bool is_ToUp() const { return size_nothreadsafe() >= tam_max;}
 
             void producer_enterprotocol(std::unique_lock<std::mutex> &e)
             {
-                if (limite_activado() && is_ToUp())
+                if (is_ToUp())
                     waitSomething(e,Producer_Variable,&lineal_container<T>::is_ToUp);
             }
 
@@ -101,7 +98,6 @@ namespace std
                 waitSomething(e,Consumer_Variable,&lineal_container<T>::empty_nothreadsafe,rel_time);
             }
 
-            // No es necesario ejecutar si no se ha consumido nada
             void consumer_exitprotocol(std::unique_lock<std::mutex> &e)
             {
                 e.unlock();
@@ -112,101 +108,101 @@ namespace std
             lineal_container(int64_t e) : tam_max(e) {}
             lineal_container(const lineal_container&e) = delete;
 
-            void push(const T &elemento)
+            void push(const T &element)
             {
-                unique_lock<std::mutex> e(Cerrojo);
+                unique_lock<std::mutex> e(lock);
                 producer_enterprotocol(e);
-                push_nothreadsafe(elemento);
+                push_nothreadsafe(element);
                 producer_exitprotocol(e);
             }
 
-            void push(T &&elemento)
+            void push(T &&element)
             {
-                unique_lock<std::mutex> e(Cerrojo);
+                unique_lock<std::mutex> e(lock);
                 producer_enterprotocol(e);
-                push_nothreadsafe(std::move(elemento));
+                push_nothreadsafe(std::move(element));
                 producer_exitprotocol(e);
             }
 
-            bool try_pop(T &elemento)
+            bool try_pop(T &element)
             {
-                unique_lock<std::mutex> e(Cerrojo);
+                unique_lock<std::mutex> e(lock);
                 if (empty_nothreadsafe())
                 {
                     return false;
                 }
                 else
                 {
-                    pop_nothreadsafe(elemento);
+                    pop_nothreadsafe(element);
                     consumer_exitprotocol(e);
                     return true;
                 }
             }
 
-            void wait_pop(T &elemento)
+            void wait_pop(T &element)
             {
-                unique_lock<std::mutex> e(Cerrojo);
+                unique_lock<std::mutex> e(lock);
                 consumer_enterprotocol(e);
-                pop_nothreadsafe(elemento);
+                pop_nothreadsafe(element);
                 consumer_exitprotocol(e);
             }
 
             template<class Rep,class Period>
-            void wait_pop(T &elemento,const std::chrono::duration<Rep, Period>& rel_time)
+            void wait_pop(T &element,const std::chrono::duration<Rep, Period>& rel_time)
             {
-                unique_lock<std::mutex> e(Cerrojo);
+                unique_lock<std::mutex> e(lock);
                 consumer_enterprotocol(e,rel_time);
-                pop_nothreadsafe(elemento);
+                pop_nothreadsafe(element);
                 consumer_exitprotocol(e);
             }
 
-            bool try_top(T &elemento) const
+            bool try_top(T &element) const
             {
-                unique_lock<std::mutex> e(Cerrojo);
+                unique_lock<std::mutex> e(lock);
                 if (empty_nothreadsafe())
                 {
                     return false;
                 }
                 else
                 {
-                    top_nothreadsafe(elemento);
+                    top_nothreadsafe(element);
                     return true;
                 }
             }
 
-            void wait_top(T &elemento)
+            void wait_top(T &element)
             {
-                unique_lock<std::mutex> e(Cerrojo);
+                unique_lock<std::mutex> e(lock);
 
                 consumer_enterprotocol(e);
-                top_nothreadsafe(elemento);
+                top_nothreadsafe(element);
                 //consumer_exitprotocol(e); // No lo ejecutamos p
             }
 
             template<class Rep,class Period>
-            void wait_top(T &elemento,const std::chrono::duration<Rep, Period>& rel_time)
+            void wait_top(T &element,const std::chrono::duration<Rep, Period>& rel_time)
             {
-                unique_lock<std::mutex> e(Cerrojo);
+                unique_lock<std::mutex> e(lock);
 
                 consumer_enterprotocol(e);
-                top_nothreadsafe(elemento);
+                top_nothreadsafe(element);
                 //consumer_exitprotocol(e);
             }
 
-            void setLimit(int64_t e)
+            void setLimit(uint64_t e)
             {
                 tam_max = e;
             }
 
             size_t size() const
             {
-                unique_lock<std::mutex> e(Cerrojo);
+                unique_lock<std::mutex> e(lock);
                 return size_nothreadsafe();
             }
 
             bool empty() const
             {
-                unique_lock<std::mutex> e(Cerrojo);
+                unique_lock<std::mutex> e(lock);
                 return empty_nothreadsafe();
             }
         };

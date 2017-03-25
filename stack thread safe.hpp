@@ -9,35 +9,34 @@ namespace std
         template<class T>
         class stack : public lineal_container<T>
         {
-            std::stack<T> Pila;
-            int64_t tam_max = -1;
+            std::stack<T> stack;
 
-            void top_nothreadsafe(T &elemento) const override
+            void top_nothreadsafe(T &element) const override
             {
-                elemento = Pila.top();
+                element = stack.top();
             }
-            void pop_nothreadsafe(T &elemento) override
+            void pop_nothreadsafe(T &element) override
             {
-                elemento = Pila.top();
-                Pila.pop();
+                element = stack.top();
+                stack.pop();
             }
-            void push_nothreadsafe(const T & elemento) override
+            void push_nothreadsafe(const T & element) override
             {
-                Pila.push(elemento);
-            }
-
-            void push_nothreadsafe(T && elemento) override
-            {
-                Pila.push(std::move(elemento));
+                stack.push(element);
             }
 
-            bool empty_nothreadsafe() const noexcept override {return Pila.empty();}
-            size_t size_nothreadsafe() const noexcept override {return Pila.size();}
+            void push_nothreadsafe(T && element) override
+            {
+                stack.push(std::move(element));
+            }
+
+            bool empty_nothreadsafe() const noexcept override {return stack.empty();}
+            size_t size_nothreadsafe() const noexcept override {return stack.size();}
 
         public:
             stack(){}
             stack (int64_t e) : lineal_container<T>(e) {}
-            stack(const stack<T> &pila) : Pila(pila) {}
+            stack(const stack<T> &s) : stack(s) {}
         };
     }
 }

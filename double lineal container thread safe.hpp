@@ -5,6 +5,10 @@ namespace std
 {
     namespace threadsafe
     {
+        /*
+        This class extends linear_container with back operations.
+        Check linear_container's docs for more details
+        */
         template<class T>
         class double_lineal_container : public lineal_container<T>
         {

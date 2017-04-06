@@ -39,43 +39,43 @@ namespace std
 
             queue() {}
             queue(int64_t tam) : lineal_container<T>(tam){}
-            queue(const std::queue<T> &q) : queue(q){}
+            queue(const std::queue<T> &q) : internal_queue(q){}
 
         private:
-            std::queue<T> queue;
+            std::queue<T> internal_queue;
 
             bool empty_nothreadsafe() const noexcept override
             {
-                return queue.empty();
+                return internal_queue.empty();
             }
 
             void pop_nothreadsafe(T& element) override
             {
-                element = queue.front();
-                queue.pop();
+                element = internal_queue.front();
+                internal_queue.pop();
             }
 
             void push_nothreadsafe(const T& element) override
             {
-                queue.push(element);
+                internal_queue.push(element);
             }
 
             void push_nothreadsafe(T && element) override
             {
-                queue.push(std::move(element));
+                internal_queue.push(std::move(element));
             }
 
             void top_nothreadsafe(T& element) const override
             {
-                element = queue.front();
+                element = internal_queue.front();
             }
 
             void back_nothreadsafe(T &element) const override
             {
-                element = queue.back();
+                element = internal_queue.back();
             }
 
-            size_t size_nothreadsafe() const noexcept override {return queue.size();}
+            size_t size_nothreadsafe() const noexcept override {return internal_queue.size();}
 
         };
     }

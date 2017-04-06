@@ -21,6 +21,13 @@ namespace std
                 return "Time expired in wait() from one std::safethread::container.";
             }
         };
+        
+        /*
+        linear_container is an abstract class that defines a generic container class
+        that allows push, pop, size and top operations. This is used for reuse code in differents
+        containers (like stack, queue...).
+        */
+        
         template<class T>
         class lineal_container
         {
@@ -176,7 +183,7 @@ namespace std
 
                 consumer_enterprotocol(e);
                 top_nothreadsafe(element);
-                //consumer_exitprotocol(e); // No lo ejecutamos p
+                //consumer_exitprotocol(e);
             }
 
             template<class Rep,class Period>

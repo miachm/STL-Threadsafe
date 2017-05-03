@@ -1,7 +1,7 @@
 #ifndef STACK_THREAD_SAFE
 #define STACK_THREAD_SAFE
 #include <stack>
-#include "lineal container thread safe.hpp"
+#include "internal/lineal container thread safe.hpp"
 namespace std
 {
     namespace threadsafe

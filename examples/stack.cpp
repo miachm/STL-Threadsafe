@@ -17,13 +17,11 @@ int main(){
 
 	std::thread threads[NUM_WORKERS];
 
-	for (int i = 0;i < NUM_WORKERS;i++){
+	for (int i = 0;i < NUM_WORKERS;i++)
 		threads[i] = std::thread(consume,std::ref(stack));
-	}
 
-	for (int i = 0;i < NUM_WORKERS;i++){
+	for (int i = 0;i < NUM_WORKERS;i++)
 		threads[i].join();
-	}
 
 	int n;
 	stack.wait_pop(n);

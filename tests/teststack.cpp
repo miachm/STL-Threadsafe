@@ -83,3 +83,42 @@ TEST(Push,ThreadSafety){
 		ASSERT_EQ(ITERATIONS,freq_table[i]);
 	}
 }
+
+TEST(push,UpperBound){
+	std::threadsafe::stack<int> stack;
+	constexpr int ITERATIONS = 10;
+	stack.setLimit(ITERATIONS/2);
+
+	std::thread producers[ITERATIONS];
+	std::thread consumer;
+	std::mutex lock;
+	std::condition_variable cond;
+	bool ready = false;
+
+	for (int i = 0;i < ITERATIONS;i++){
+		producers[i] = std::thread([&](int id){
+			wait(lock,cond,ready);
+			for (int j = 0;j < ITERATIONS;j++){
+				stack.push(id);
+				ASSERT_LE(stack.size(),ITERATIONS/2);
+			}
+		},i);
+	}
+
+	consumer = std::thread([&]{
+		wait(lock,cond,ready);
+		int out;
+		for (int j = 0;j < ITERATIONS*ITERATIONS;j++){
+			ASSERT_LE(stack.size(),ITERATIONS/2);
+			stack.wait_pop(out);
+		}
+		
+	});
+	
+	ready = true;
+	cond.notify_all();
+	for (int i = 0;i < ITERATIONS;i++){
+		producers[i].join();
+	}
+	consumer.join();
+}

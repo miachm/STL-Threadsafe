@@ -84,7 +84,7 @@ TEST(Push,ThreadSafety){
 	}
 }
 
-TEST(push,UpperBound){
+TEST(Push,UpperBound){
 	std::threadsafe::stack<int> stack;
 	constexpr int ITERATIONS = 10;
 	stack.setLimit(ITERATIONS/2);

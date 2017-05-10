@@ -38,17 +38,29 @@ namespace std
                         return new V(it->second);
                     }
                 }
-
-                auto put(const K & key,V & value){
+            
+                auto insert(const K & key,V & value){
                     std::unique_lock<std::shared_mutex> lock(mutex);
                     return internal_map.insert(std::make_pair(key,value));
+                }
+            
+                auto erase(const K & key){
+                    std::unique_lock<std::shared_mutex> lock(mutex);
+                    return internal_map.erase(key);
                 }
 
                 size_t size(){
                     std::shared_lock<std::shared_mutex> lock(mutex);
                     return internal_map.size();
                 }
-
+                
+                bool contains(const K& key){
+                    std::shared_lock<std::shared_mutex> lock(mutex);
+                    auto it = internal_map.find(key);
+                    return it == internal_map.end();
+                }
+                
+                
         };
     }
 }

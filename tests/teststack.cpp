@@ -137,3 +137,56 @@ TEST(Try_pop,HandleBasicOperation){
 	}
 	ASSERT_EQ(0,stack.size());
 }
+
+TEST(Try_pop,ThreadSafety){
+	std::threadsafe::stack<int> stack;
+	std::threadsafe::stack<int> another_stack;
+	constexpr int ITERATIONS = 10;
+	std::thread producers[ITERATIONS];
+	std::thread consumers[ITERATIONS];
+	std::mutex lock;
+	std::condition_variable cond;
+	bool ready = false;
+
+	for (int i = 0;i < ITERATIONS;i++){
+		producers[i] = std::thread([&](int id){
+			wait(lock,cond,ready);
+			for (int j = 0;j < ITERATIONS;j++){
+				stack.push(id);
+			}
+		},i);
+	}
+
+	for (int i = 0;i < ITERATIONS;i++){
+		consumers[i] = std::thread([&]{
+			wait(lock,cond,ready);
+			int out;
+			for (int j = 0;j < ITERATIONS;j++){
+				while (!stack.try_pop(out));
+				another_stack.push(out);
+			}
+		});
+	}
+	
+	ready = true;
+	cond.notify_all();
+	for (int i = 0;i < ITERATIONS;i++){
+		producers[i].join();
+		consumers[i].join();
+	}
+
+	ASSERT_EQ(ITERATIONS*ITERATIONS,another_stack.size());
+
+	int freq_table[ITERATIONS];
+	std::fill(freq_table,freq_table+ITERATIONS,0);
+	while (!another_stack.empty()){
+		int out;
+		another_stack.wait_pop(out);
+		freq_table[out]++;
+	}
+
+	for (int i = 0;i < ITERATIONS;i++)
+	{
+		ASSERT_EQ(ITERATIONS,freq_table[i]);
+	}
+}

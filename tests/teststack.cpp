@@ -122,3 +122,18 @@ TEST(Push,UpperBound){
 	}
 	consumer.join();
 }
+
+TEST(Try_pop,HandleBasicOperation){
+	std::threadsafe::stack<int> stack;
+	for (int i = 1;i <= 10;i++){
+		stack.push(i);
+	}
+
+	int out;
+	for (int i = 10;i >= 1;i--){
+		ASSERT_EQ(i,stack.size());
+		ASSERT_EQ(true,stack.try_pop(out));
+		ASSERT_EQ(i,out);
+	}
+	ASSERT_EQ(0,stack.size());
+}

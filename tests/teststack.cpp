@@ -29,44 +29,67 @@ void wait(std::mutex& lock,std::condition_variable& cond,const bool &ready){
 	}
 }
 
-TEST(Push,ThreadSafety){
-	std::threadsafe::stack<int> stack;
-	std::threadsafe::stack<int> another_stack;
-	constexpr int ITERATIONS = 10;
-	std::thread producers[ITERATIONS];
-	std::thread consumers[ITERATIONS];
+template<typename Producer,typename Consumer>
+void launchThreads(Producer producer_function,Consumer consumer_function,const int num_producers,const int num_consumers, const int iterations_producers,const int iterations_consumers){
+	std::thread* producers = new std::thread[num_producers];
+	std::thread* consumers = new std::thread[num_consumers];
 	std::mutex lock;
 	std::condition_variable cond;
 	bool ready = false;
 
-	for (int i = 0;i < ITERATIONS;i++){
+	for (int i = 0;i < num_producers;i++){
 		producers[i] = std::thread([&](int id){
 			wait(lock,cond,ready);
-			for (int j = 0;j < ITERATIONS;j++){
-				stack.push(id);
+			for (int j = 0;j < iterations_producers;j++){
+				producer_function(id,j);
 			}
 		},i);
 	}
 
-	for (int i = 0;i < ITERATIONS;i++){
-		consumers[i] = std::thread([&]{
+	for (int i = 0;i < num_consumers;i++){
+		consumers[i] = std::thread([&](int id){
 			wait(lock,cond,ready);
-			int out;
-			for (int j = 0;j < ITERATIONS;j++){
-				stack.wait_pop(out);
-				ASSERT_LT(out,ITERATIONS);
-				ASSERT_GE(out,0);
-				another_stack.push(out);
+			for (int j = 0;j < iterations_consumers;j++){
+				consumer_function(id,j);
 			}
-		});
+		},i);
 	}
 	
 	ready = true;
 	cond.notify_all();
-	for (int i = 0;i < ITERATIONS;i++){
+	for (int i = 0;i < num_producers;i++){
 		producers[i].join();
+	}
+	for (int i = 0;i < num_consumers;i++){
 		consumers[i].join();
 	}
+
+	delete[] producers;
+	delete[] consumers;
+}
+
+template<typename Producer,typename Consumer>
+void launchThreads(Producer producer_function,Consumer consumer_function,const int num_producers,const int num_consumers, const int iterations_producers){
+	launchThreads(producer_function,consumer_function,num_producers,num_consumers,iterations_producers,iterations_producers);
+}
+
+TEST(Push,ThreadSafety){
+	std::threadsafe::stack<int> stack;
+	std::threadsafe::stack<int> another_stack;
+	constexpr int ITERATIONS = 10;
+	constexpr int PRODUCERS = ITERATIONS;
+	constexpr int CONSUMERS = ITERATIONS;
+
+	auto producer = [&](int id,int it){stack.push(id);};
+	auto consumer = [&](int id,int it){
+					int out;
+					stack.wait_pop(out);
+					ASSERT_LT(out,ITERATIONS);
+					ASSERT_GE(out,0);
+					another_stack.push(out);
+					};
+
+	launchThreads(producer,consumer,PRODUCERS,CONSUMERS,ITERATIONS);
 
 	ASSERT_EQ(ITERATIONS*ITERATIONS,another_stack.size());
 
@@ -86,41 +109,24 @@ TEST(Push,ThreadSafety){
 
 TEST(Push,UpperBound){
 	std::threadsafe::stack<int> stack;
-	constexpr int ITERATIONS = 10;
-	stack.setLimit(ITERATIONS/2);
+	constexpr int ITERATIONS_PRODUCERS = 10;
+	constexpr int NUM_PRODUCERS = ITERATIONS_PRODUCERS;
+	constexpr int NUM_CONSUMERS = 1;
+	constexpr int SIZE = NUM_PRODUCERS/2;
+	constexpr int ITERATIONS_CONSUMERS = ITERATIONS_PRODUCERS*NUM_PRODUCERS;
+	stack.setLimit(SIZE);
 
-	std::thread producers[ITERATIONS];
-	std::thread consumer;
-	std::mutex lock;
-	std::condition_variable cond;
-	bool ready = false;
-
-	for (int i = 0;i < ITERATIONS;i++){
-		producers[i] = std::thread([&](int id){
-			wait(lock,cond,ready);
-			for (int j = 0;j < ITERATIONS;j++){
+	auto producer = [&](int id,int it){
 				stack.push(id);
-				ASSERT_LE(stack.size(),ITERATIONS/2);
-			}
-		},i);
-	}
+				ASSERT_LE(stack.size(),SIZE);
+			};
+	auto consumer = [&](int id,int it){
+				int out;
+				ASSERT_LE(stack.size(),SIZE);
+				stack.wait_pop(out);
+			};
 
-	consumer = std::thread([&]{
-		wait(lock,cond,ready);
-		int out;
-		for (int j = 0;j < ITERATIONS*ITERATIONS;j++){
-			ASSERT_LE(stack.size(),ITERATIONS/2);
-			stack.wait_pop(out);
-		}
-		
-	});
-	
-	ready = true;
-	cond.notify_all();
-	for (int i = 0;i < ITERATIONS;i++){
-		producers[i].join();
-	}
-	consumer.join();
+	launchThreads(producer,consumer,NUM_PRODUCERS,NUM_CONSUMERS,ITERATIONS_PRODUCERS,ITERATIONS_CONSUMERS);
 }
 
 TEST(Try_pop,HandleBasicOperation){
@@ -141,39 +147,21 @@ TEST(Try_pop,HandleBasicOperation){
 TEST(Try_pop,ThreadSafety){
 	std::threadsafe::stack<int> stack;
 	std::threadsafe::stack<int> another_stack;
+	constexpr int NUM_PRODUCERS = 10;
+	constexpr int NUM_CONSUMERS = 10;
 	constexpr int ITERATIONS = 10;
-	std::thread producers[ITERATIONS];
-	std::thread consumers[ITERATIONS];
-	std::mutex lock;
-	std::condition_variable cond;
-	bool ready = false;
 
-	for (int i = 0;i < ITERATIONS;i++){
-		producers[i] = std::thread([&](int id){
-			wait(lock,cond,ready);
-			for (int j = 0;j < ITERATIONS;j++){
+	auto producer = [&](int id,int it){
 				stack.push(id);
-			}
-		},i);
-	}
-
-	for (int i = 0;i < ITERATIONS;i++){
-		consumers[i] = std::thread([&]{
-			wait(lock,cond,ready);
-			int out;
-			for (int j = 0;j < ITERATIONS;j++){
+			};
+	
+	auto consumer = [&](int id,int it){
+				int out;
 				while (!stack.try_pop(out));
 				another_stack.push(out);
-			}
-		});
-	}
-	
-	ready = true;
-	cond.notify_all();
-	for (int i = 0;i < ITERATIONS;i++){
-		producers[i].join();
-		consumers[i].join();
-	}
+			};
+
+	launchThreads(producer,consumer,NUM_PRODUCERS,NUM_CONSUMERS,ITERATIONS);
 
 	ASSERT_EQ(ITERATIONS*ITERATIONS,another_stack.size());
 

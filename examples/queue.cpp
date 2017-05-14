@@ -28,9 +28,8 @@ int main(){
 
 	std::thread threads[NUM_WORKERS];
 
-	for (int i = 0;i < NUM_WORKERS;i++){
+	for (int i = 0;i < NUM_WORKERS;i++)
 		threads[i] = std::thread(worker,std::ref(tasks));	
-	}
 	
 	for (double n = 1.0;n <= 10; n += 1.0)
 		tasks.push(n*n);
@@ -40,6 +39,4 @@ int main(){
 
 	for (int i = 0;i < NUM_WORKERS;i++)
 		threads[i].join();
-
-	// It should print: NUM_WORKERS*INCR
 }

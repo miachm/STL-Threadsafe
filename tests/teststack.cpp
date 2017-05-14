@@ -227,3 +227,18 @@ TEST(Wait_pop,Timer){
 	producer.join();
 	consumer.join();
 }
+
+TEST(Try_top,HandleBasicOperation){
+	std::threadsafe::stack<int> stack;
+	int out;
+	ASSERT_EQ(false,stack.try_top(out));
+	for (int i = 1;i <= 10;i++){
+		stack.push(i);
+	}
+
+	for (int i = 10;i >= 1;i--){
+		ASSERT_EQ(true,stack.try_top(out));
+		ASSERT_EQ(10,stack.size());
+		ASSERT_EQ(10,out);
+	}
+}

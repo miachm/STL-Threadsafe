@@ -193,3 +193,37 @@ TEST(Wait_pop,HandleBasicOperation){
 	}
 	ASSERT_EQ(0,stack.size());
 }
+
+TEST(Wait_pop,Timer){
+	std::threadsafe::stack<int> stack;
+	
+	std::thread producer([&]{
+		stack.push(1);
+		std::this_thread::sleep_for(std::chrono::milliseconds(10));
+		stack.push(2);
+		std::this_thread::sleep_for(std::chrono::milliseconds(20));
+		stack.push(3);
+	});
+
+	std::thread consumer([&]{
+		int output;
+		
+		try {
+			stack.wait_pop(output,std::chrono::milliseconds(5));
+			ASSERT_EQ(1,output);
+			stack.wait_pop(output,std::chrono::milliseconds(15));
+			ASSERT_EQ(2,output);
+		} catch(std::threadsafe::Time_Expired e){
+			FAIL() << " exception Time_Expired throwed";
+		}
+
+		try {
+			stack.wait_pop(output,std::chrono::milliseconds(1));
+			FAIL() << " exception didn't throw!";
+		} catch(std::threadsafe::Time_Expired e){
+		}
+	});
+
+	producer.join();
+	consumer.join();
+}

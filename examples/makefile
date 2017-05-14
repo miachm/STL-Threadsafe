@@ -3,6 +3,7 @@ CC_LIBRARY = -pthread
 CC_INCLUDE = -I../include/
 CC_LINKS_FLAGS = $(CC_LIBRARY) $(CC_OPTIONS) $(CC_INCLUDE)
 
-stack: 
+all: 
 	g++ -o stack $(CC_LINKS_FLAGS) stack.cpp
+	g++ -o queue $(CC_LINKS_FLAGS) queue.cpp
 

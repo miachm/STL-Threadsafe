@@ -45,7 +45,8 @@ int main(){
 
 	for (int i = 0;i < NUM_WORKERS;i++)
 		threads[i].join();
-}```
+}`
+```
 
 The next operations are supported:
 

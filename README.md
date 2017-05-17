@@ -7,6 +7,7 @@ A threadsafe implementation of Queue, Stack and Priority Queue.
 void consumer(std::threadsafe::queue<double> &tasks){
 	double operation;
 	tasks.wait_pop(operation);
+	
 	while (operation != EXIT){
 		double sqrt = std::sqrt(operation);
 		printResult(sqrt);

@@ -5,7 +5,6 @@ A threadsafe implementation of Queue, Stack and Priority Queue.
 ```c++
 
 void consumer(std::threadsafe::queue<double> &tasks){
-
 	double operation;
 	
 	tasks.wait_pop(operation);
@@ -17,7 +16,6 @@ void consumer(std::threadsafe::queue<double> &tasks){
 }
 
 void producer(std::threadsafe::queue<double> &tasks){
-
 	for (int i = 1;i < 10;i++)
 		tasks.push(i*i);
 	

@@ -319,3 +319,10 @@ TEST(Wait_top,Timer){
 	producer.join();
 	consumer.join();
 }
+
+TEST(EMPTY,HanbleBasicOperation){
+	std::threadsafe::stack<int> stack;
+	ASSERT_TRUE(stack.empty());
+	stack.push(1);
+	ASSERT_FALSE(stack.empty());
+}

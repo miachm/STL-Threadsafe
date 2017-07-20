@@ -34,7 +34,7 @@ namespace std
             {
                 unique_lock<std::mutex> e(lineal_container<T>::lock);
                 lineal_container<T>::consumer_enterprotocol(e);
-                lineal_container<T>::back_nothreadsafe(element);
+                back_nothreadsafe(element);
             }
 
             template<class Rep,class Period>
@@ -43,7 +43,7 @@ namespace std
                 unique_lock<std::mutex> e(lineal_container<T>::lock);
 
                 lineal_container<T>::consumer_enterprotocol(e);
-                lineal_container<T>::back_nothreadsafe(element);
+                back_nothreadsafe(element,rel_time);
                 //consumer_exitprotocol(e);
             }
         };

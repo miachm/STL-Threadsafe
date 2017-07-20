@@ -267,3 +267,18 @@ TEST(Try_top,ThreadSafety){
 	launchThreads(producer,consumer,NUM_PRODUCERS,NUM_CONSUMERS,ITERATIONS);
 
 }
+
+TEST(Wait_top,HandleBasicOperation){
+	std::threadsafe::stack<int> stack;
+	int out;
+	for (int i = 1;i <= 10;i++){
+		stack.push(i);
+	}
+
+	for (int i = 10;i >= 1;i--){
+		stack.wait_top(out);
+		ASSERT_EQ(10,stack.size());
+		ASSERT_EQ(10,out);
+	}
+
+}

@@ -191,7 +191,7 @@ namespace std
             {
                 unique_lock<std::mutex> e(lock);
 
-                consumer_enterprotocol(e);
+                consumer_enterprotocol(e,rel_time);
                 top_nothreadsafe(element);
                 //consumer_exitprotocol(e);
             }

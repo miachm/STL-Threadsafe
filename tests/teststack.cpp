@@ -242,3 +242,28 @@ TEST(Try_top,HandleBasicOperation){
 		ASSERT_EQ(10,out);
 	}
 }
+
+TEST(Try_top,ThreadSafety){
+	std::threadsafe::stack<int> stack;
+	std::threadsafe::stack<int> another_stack;
+	constexpr int NUM_PRODUCERS = 1;
+	constexpr int NUM_CONSUMERS = 1;
+	constexpr int ITERATIONS = 10;
+
+	auto producer = [&](int id,int it){
+				stack.push(it);
+			};
+	
+	int n = 0;
+	auto consumer = [&](int id,int it){
+				int out;
+				
+				while (!stack.try_top(out) && out < ITERATIONS){
+					ASSERT_EQ(out,n);
+					n++;
+				}
+			};
+
+	launchThreads(producer,consumer,NUM_PRODUCERS,NUM_CONSUMERS,ITERATIONS);
+
+}

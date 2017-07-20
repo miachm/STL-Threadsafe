@@ -282,3 +282,40 @@ TEST(Wait_top,HandleBasicOperation){
 	}
 
 }
+
+TEST(Wait_top,Timer){
+	std::threadsafe::stack<int> stack;
+	
+	std::thread producer([&]{
+		stack.push(1);
+		std::this_thread::sleep_for(std::chrono::milliseconds(10));
+		stack.push(2);
+		std::this_thread::sleep_for(std::chrono::milliseconds(50));
+		stack.push(3);
+	});
+
+	std::thread consumer([&]{
+		int output;
+		
+		try {
+			stack.wait_top(output,std::chrono::milliseconds(5));
+			ASSERT_EQ(1,output);
+			stack.wait_pop(output);
+
+			stack.wait_top(output,std::chrono::milliseconds(15));
+			ASSERT_EQ(2,output);
+			stack.wait_pop(output);
+		} catch(std::threadsafe::Time_Expired e){
+			FAIL() << " exception Time_Expired throwed";
+		}
+
+		try {
+			stack.wait_top(output,std::chrono::milliseconds(1));
+			FAIL() << " exception didn't throw!";
+		} catch(std::threadsafe::Time_Expired e){
+		}
+	});
+
+	producer.join();
+	consumer.join();
+}

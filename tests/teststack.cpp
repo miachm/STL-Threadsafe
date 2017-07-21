@@ -92,6 +92,7 @@ TEST(Try_pop,HandleBasicOperation){
 		ASSERT_EQ(i,out);
 	}
 	ASSERT_EQ(0,stack.size());
+	ASSERT_EQ(false,stack.try_pop(out));
 }
 
 TEST(Try_pop,ThreadSafety){

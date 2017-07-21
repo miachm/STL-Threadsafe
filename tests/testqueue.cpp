@@ -60,3 +60,25 @@ TEST(Push,ThreadSafety){
 		ASSERT_EQ(ITERATIONS,freq_table[i]);
 	}
 }
+
+TEST(Push,UpperBound){
+	std::threadsafe::queue<int> queue;
+	constexpr int ITERATIONS_PRODUCERS = 10;
+	constexpr int NUM_PRODUCERS = ITERATIONS_PRODUCERS;
+	constexpr int NUM_CONSUMERS = 1;
+	constexpr int SIZE = NUM_PRODUCERS/2;
+	constexpr int ITERATIONS_CONSUMERS = ITERATIONS_PRODUCERS*NUM_PRODUCERS;
+	queue.setLimit(SIZE);
+
+	auto producer = [&](int id,int it){
+				queue.push(id);
+				ASSERT_LE(queue.size(),SIZE);
+			};
+	auto consumer = [&](int id,int it){
+				int out;
+				ASSERT_LE(queue.size(),SIZE);
+				queue.wait_pop(out);
+			};
+
+	launchThreads(producer,consumer,NUM_PRODUCERS,NUM_CONSUMERS,ITERATIONS_PRODUCERS,ITERATIONS_CONSUMERS);
+}

@@ -82,3 +82,19 @@ TEST(Push,UpperBound){
 
 	launchThreads(producer,consumer,NUM_PRODUCERS,NUM_CONSUMERS,ITERATIONS_PRODUCERS,ITERATIONS_CONSUMERS);
 }
+
+TEST(Try_pop,HandleBasicOperation){
+	std::threadsafe::queue<int> queue;
+	for (int i = 1;i <= 10;i++){
+		queue.push(i);
+	}
+
+	int out;
+	for (int i = 1;i <= 10;i++){
+		ASSERT_EQ(10-i+1,queue.size());
+		ASSERT_EQ(true,queue.try_pop(out));
+		ASSERT_EQ(i,out);
+	}
+	ASSERT_EQ(0,queue.size());
+	ASSERT_EQ(false,queue.try_pop(out));
+}

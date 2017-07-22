@@ -56,3 +56,18 @@ TEST(Try_pop,ThreadSafety){
 	std::threadsafe::queue<int> queue;
 	testPopThreadSafety(queue);
 }
+
+TEST(Wait_pop,HandleBasicOperation){
+	std::threadsafe::queue<int> queue;
+	for (int i = 1;i <= 10;i++){
+		queue.push(i);
+	}
+
+	int out;
+	for (int i = 1;i <= 10;i++){
+		ASSERT_EQ(10-i+1,queue.size());
+		queue.wait_pop(out);
+		ASSERT_EQ(i,out);
+	}
+	ASSERT_EQ(0,queue.size());
+}

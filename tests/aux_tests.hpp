@@ -84,3 +84,25 @@ void testPushThreadSafety(Container& container){
 		ASSERT_EQ(ITERATIONS,freq_table[i]);
 	}
 }
+
+template<typename Container>
+void testPushUpperBound(Container& container){
+	constexpr int ITERATIONS_PRODUCERS = 10;
+	constexpr int NUM_PRODUCERS = ITERATIONS_PRODUCERS;
+	constexpr int NUM_CONSUMERS = 1;
+	constexpr int SIZE = NUM_PRODUCERS/2;
+	constexpr int ITERATIONS_CONSUMERS = ITERATIONS_PRODUCERS*NUM_PRODUCERS;
+	container.setLimit(SIZE);
+
+	auto producer = [&](int id,int it){
+				container.push(id);
+				ASSERT_LE(container.size(),SIZE);
+			};
+	auto consumer = [&](int id,int it){
+				int out;
+				ASSERT_LE(container.size(),SIZE);
+				container.wait_pop(out);
+			};
+
+	launchThreads(producer,consumer,NUM_PRODUCERS,NUM_CONSUMERS,ITERATIONS_PRODUCERS,ITERATIONS_CONSUMERS);
+}

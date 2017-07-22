@@ -51,3 +51,36 @@ void launchThreads(Producer producer_function,Consumer consumer_function,const i
 	launchThreads(producer_function,consumer_function,num_producers,num_consumers,iterations_producers,iterations_producers);
 }
 
+template<typename Container>
+void testPushThreadSafety(Container& container){
+	Container another_container;
+	constexpr int ITERATIONS = 10;
+	constexpr int PRODUCERS = ITERATIONS;
+	constexpr int CONSUMERS = ITERATIONS;
+
+	auto producer = [&](int id,int it){container.push(id);};
+	auto consumer = [&](int id,int it){
+					int out;
+					container.wait_pop(out);
+					ASSERT_LT(out,ITERATIONS);
+					ASSERT_GE(out,0);
+					another_container.push(out);
+					};
+
+	launchThreads(producer,consumer,PRODUCERS,CONSUMERS,ITERATIONS);
+
+	ASSERT_EQ(ITERATIONS*ITERATIONS,another_container.size());
+
+	int freq_table[ITERATIONS];
+	std::fill(freq_table,freq_table+ITERATIONS,0);
+	while (!another_container.empty()){
+		int out;
+		another_container.wait_pop(out);
+		freq_table[out]++;
+	}
+
+	for (int i = 0;i < ITERATIONS;i++)
+	{
+		ASSERT_EQ(ITERATIONS,freq_table[i]);
+	}
+}

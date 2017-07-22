@@ -51,6 +51,23 @@ void launchThreads(Producer producer_function,Consumer consumer_function,const i
 	launchThreads(producer_function,consumer_function,num_producers,num_consumers,iterations_producers,iterations_producers);
 }
 
+template <typename Container>
+void testCoherency(Container& another_container,const int ITERATIONS){
+	ASSERT_EQ(ITERATIONS*ITERATIONS,another_container.size());
+	int freq_table[ITERATIONS];
+	std::fill(freq_table,freq_table+ITERATIONS,0);
+	while (!another_container.empty()){
+		int out;
+		another_container.wait_pop(out);
+		freq_table[out]++;
+	}
+
+	for (int i = 0;i < ITERATIONS;i++)
+	{
+		ASSERT_EQ(ITERATIONS,freq_table[i]);
+	}
+}
+
 template<typename Container>
 void testPushThreadSafety(Container& container){
 	Container another_container;
@@ -69,20 +86,29 @@ void testPushThreadSafety(Container& container){
 
 	launchThreads(producer,consumer,PRODUCERS,CONSUMERS,ITERATIONS);
 
-	ASSERT_EQ(ITERATIONS*ITERATIONS,another_container.size());
+	testCoherency(another_container,ITERATIONS);
+}
 
-	int freq_table[ITERATIONS];
-	std::fill(freq_table,freq_table+ITERATIONS,0);
-	while (!another_container.empty()){
-		int out;
-		another_container.wait_pop(out);
-		freq_table[out]++;
-	}
+template<typename Container>
+void testPopThreadSafety(Container& container){
+	Container another_container;
+	constexpr int NUM_PRODUCERS = 10;
+	constexpr int NUM_CONSUMERS = 10;
+	constexpr int ITERATIONS = 10;
 
-	for (int i = 0;i < ITERATIONS;i++)
-	{
-		ASSERT_EQ(ITERATIONS,freq_table[i]);
-	}
+	auto producer = [&](int id,int it){
+				container.push(id);
+			};
+	
+	auto consumer = [&](int id,int it){
+				int out;
+				while (!container.try_pop(out));
+				another_container.push(out);
+			};
+
+	launchThreads(producer,consumer,NUM_PRODUCERS,NUM_CONSUMERS,ITERATIONS);
+
+	testCoherency(another_container,ITERATIONS);
 }
 
 template<typename Container>

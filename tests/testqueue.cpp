@@ -51,3 +51,8 @@ TEST(Try_pop,HandleBasicOperation){
 	ASSERT_EQ(0,queue.size());
 	ASSERT_EQ(false,queue.try_pop(out));
 }
+
+TEST(Try_pop,ThreadSafety){
+	std::threadsafe::queue<int> queue;
+	testPopThreadSafety(queue);
+}

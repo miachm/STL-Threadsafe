@@ -51,37 +51,7 @@ TEST(Try_pop,HandleBasicOperation){
 
 TEST(Try_pop,ThreadSafety){
 	std::threadsafe::stack<int> stack;
-	std::threadsafe::stack<int> another_stack;
-	constexpr int NUM_PRODUCERS = 10;
-	constexpr int NUM_CONSUMERS = 10;
-	constexpr int ITERATIONS = 10;
-
-	auto producer = [&](int id,int it){
-				stack.push(id);
-			};
-	
-	auto consumer = [&](int id,int it){
-				int out;
-				while (!stack.try_pop(out));
-				another_stack.push(out);
-			};
-
-	launchThreads(producer,consumer,NUM_PRODUCERS,NUM_CONSUMERS,ITERATIONS);
-
-	ASSERT_EQ(ITERATIONS*ITERATIONS,another_stack.size());
-
-	int freq_table[ITERATIONS];
-	std::fill(freq_table,freq_table+ITERATIONS,0);
-	while (!another_stack.empty()){
-		int out;
-		another_stack.wait_pop(out);
-		freq_table[out]++;
-	}
-
-	for (int i = 0;i < ITERATIONS;i++)
-	{
-		ASSERT_EQ(ITERATIONS,freq_table[i]);
-	}
+	testPopThreadSafety(stack);
 }
 
 TEST(Wait_pop,HandleBasicOperation){

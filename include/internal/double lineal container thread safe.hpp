@@ -22,10 +22,10 @@ namespace std
             {
                 unique_lock<std::mutex> e(lineal_container<T>::lock);
 
-                if (lineal_container<T>::empty_nothreadsafe()) return false;
+                if (this->empty_nothreadsafe())  return false;
                 else
                 {
-                    lineal_container<T>::back_nothreadsafe(element);
+                    back_nothreadsafe(element);
                     return true;
                 }
             }
@@ -33,7 +33,7 @@ namespace std
             void wait_back(T &element)
             {
                 unique_lock<std::mutex> e(lineal_container<T>::lock);
-                lineal_container<T>::consumer_enterprotocol(e);
+                this->consumer_enterprotocol(e);
                 back_nothreadsafe(element);
             }
 
@@ -42,7 +42,7 @@ namespace std
             {
                 unique_lock<std::mutex> e(lineal_container<T>::lock);
 
-                lineal_container<T>::consumer_enterprotocol(e,rel_time);
+                this->consumer_enterprotocol(e,rel_time);
                 back_nothreadsafe(element);
                 //consumer_exitprotocol(e);
             }

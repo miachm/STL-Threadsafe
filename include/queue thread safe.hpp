@@ -38,7 +38,7 @@ namespace std
         public:
 
             queue() {}
-            queue(int64_t tam) : lineal_container<T>(tam){}
+            queue(int64_t tam) : double_lineal_container<T>(tam){}
             queue(const std::queue<T> &q) : internal_queue(q){}
 
         private:

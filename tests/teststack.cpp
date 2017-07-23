@@ -91,7 +91,6 @@ TEST(Try_top,HandleBasicOperation){
 
 TEST(Try_top,ThreadSafety){
 	std::threadsafe::stack<int> stack;
-	std::threadsafe::stack<int> another_stack;
 	constexpr int NUM_PRODUCERS = 1;
 	constexpr int NUM_CONSUMERS = 1;
 	constexpr int ITERATIONS = 10;

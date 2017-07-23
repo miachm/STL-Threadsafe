@@ -219,6 +219,46 @@ TEST(Wait_back,Timer){
 	producer.join();
 	consumer.join();
 }
+
+TEST(Try_back,HandleBasicOperation){
+	std::threadsafe::queue<int> queue;
+	int out;
+	ASSERT_EQ(false,queue.try_top(out));
+	for (int i = 1;i <= 10;i++){
+		queue.push(i);
+	}
+
+	for (int i = 1;i <= 10;i++){
+		ASSERT_EQ(true,queue.try_back(out));
+		ASSERT_EQ(10,queue.size());
+		ASSERT_EQ(10,out);
+	}
+}
+
+TEST(Try_back,ThreadSafety){
+	std::threadsafe::queue<int> queue;
+	constexpr int NUM_PRODUCERS = 1;
+	constexpr int NUM_CONSUMERS = 1;
+	constexpr int ITERATIONS = 10;
+
+	auto producer = [&](int id,int it){
+				queue.push(it);
+			};
+	
+	int n = ITERATIONS-1;
+	auto consumer = [&](int id,int it){
+				int out;
+				
+				while (!queue.try_back(out) && out < ITERATIONS){
+					ASSERT_EQ(out,n);
+					n--;
+				}
+			};
+
+	launchThreads(producer,consumer,NUM_PRODUCERS,NUM_CONSUMERS,ITERATIONS);
+
+}
+
 TEST(EMPTY,HanbleBasicOperation){
 	std::threadsafe::queue<int> queue;
 	ASSERT_TRUE(queue.empty());

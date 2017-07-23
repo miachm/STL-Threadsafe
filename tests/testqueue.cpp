@@ -168,6 +168,57 @@ TEST(Wait_top,Timer){
 	consumer.join();
 }
 
+TEST(Wait_back,HandleBasicOperation){
+	std::threadsafe::queue<int> queue;
+	int out;
+	for (int i = 1;i <= 10;i++){
+		queue.push(i);
+	}
+
+	for (int i = 10;i >= 1;i--){
+		queue.wait_back(out);
+		ASSERT_EQ(10,queue.size());
+		ASSERT_EQ(10,out);
+	}
+
+}
+
+TEST(Wait_back,Timer){
+	std::threadsafe::queue<int> queue;
+	
+	std::thread producer([&]{
+		queue.push(1);
+		std::this_thread::sleep_for(std::chrono::milliseconds(10));
+		queue.push(2);
+		std::this_thread::sleep_for(std::chrono::milliseconds(50));
+		queue.push(3);
+	});
+
+	std::thread consumer([&]{
+		int output;
+		
+		try {
+			queue.wait_back(output,std::chrono::milliseconds(5));
+			ASSERT_EQ(1,output);
+			queue.wait_pop(output);
+
+			queue.wait_back(output,std::chrono::milliseconds(15));
+			ASSERT_EQ(2,output);
+			queue.wait_pop(output);
+		} catch(std::threadsafe::Time_Expired e){
+			FAIL() << " exception Time_Expired throwed";
+		}
+
+		try {
+			queue.wait_back(output,std::chrono::milliseconds(1));
+			FAIL() << " exception didn't throw!";
+		} catch(std::threadsafe::Time_Expired e){
+		}
+	});
+
+	producer.join();
+	consumer.join();
+}
 TEST(EMPTY,HanbleBasicOperation){
 	std::threadsafe::queue<int> queue;
 	ASSERT_TRUE(queue.empty());

@@ -167,3 +167,10 @@ TEST(Wait_top,Timer){
 	producer.join();
 	consumer.join();
 }
+
+TEST(EMPTY,HanbleBasicOperation){
+	std::threadsafe::queue<int> queue;
+	ASSERT_TRUE(queue.empty());
+	queue.push(1);
+	ASSERT_FALSE(queue.empty());
+}

@@ -132,3 +132,36 @@ void testPushUpperBound(Container& container){
 
 	launchThreads(producer,consumer,NUM_PRODUCERS,NUM_CONSUMERS,ITERATIONS_PRODUCERS,ITERATIONS_CONSUMERS);
 }
+
+template<typename Container>
+void testTimerPop(Container & container){
+	std::thread producer([&]{
+		container.push(1);
+		std::this_thread::sleep_for(std::chrono::milliseconds(10));
+		container.push(2);
+		std::this_thread::sleep_for(std::chrono::milliseconds(20));
+		container.push(3);
+	});
+
+	std::thread consumer([&]{
+		int output;
+		
+		try {
+			container.wait_pop(output,std::chrono::milliseconds(5));
+			ASSERT_EQ(1,output);
+			container.wait_pop(output,std::chrono::milliseconds(15));
+			ASSERT_EQ(2,output);
+		} catch(std::threadsafe::Time_Expired e){
+			FAIL() << " exception Time_Expired throwed";
+		}
+
+		try {
+			container.wait_pop(output,std::chrono::milliseconds(1));
+			FAIL() << " exception didn't throw!";
+		} catch(std::threadsafe::Time_Expired e){
+		}
+	});
+
+	producer.join();
+	consumer.join();
+}

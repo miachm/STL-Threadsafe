@@ -71,3 +71,8 @@ TEST(Wait_pop,HandleBasicOperation){
 	}
 	ASSERT_EQ(0,queue.size());
 }
+
+TEST(Wait_pop,Timer){
+	std::threadsafe::queue<int> queue;
+	testTimerPop(queue);
+}

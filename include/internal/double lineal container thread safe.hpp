@@ -42,8 +42,8 @@ namespace std
             {
                 unique_lock<std::mutex> e(lineal_container<T>::lock);
 
-                lineal_container<T>::consumer_enterprotocol(e);
-                back_nothreadsafe(element,rel_time);
+                lineal_container<T>::consumer_enterprotocol(e,rel_time);
+                back_nothreadsafe(element);
                 //consumer_exitprotocol(e);
             }
         };

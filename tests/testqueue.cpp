@@ -76,3 +76,18 @@ TEST(Wait_pop,Timer){
 	std::threadsafe::queue<int> queue;
 	testTimerPop(queue);
 }
+
+TEST(Try_top,HandleBasicOperation){
+	std::threadsafe::queue<int> queue;
+	int out;
+	ASSERT_EQ(false,queue.try_top(out));
+	for (int i = 1;i <= 10;i++){
+		queue.push(i);
+	}
+
+	for (int i = 1;i <= 10;i++){
+		ASSERT_EQ(true,queue.try_top(out));
+		ASSERT_EQ(10,queue.size());
+		ASSERT_EQ(1,out);
+	}
+}

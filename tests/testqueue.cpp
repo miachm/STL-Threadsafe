@@ -91,3 +91,27 @@ TEST(Try_top,HandleBasicOperation){
 		ASSERT_EQ(1,out);
 	}
 }
+
+TEST(Try_top,ThreadSafety){
+	std::threadsafe::queue<int> queue;
+	constexpr int NUM_PRODUCERS = 1;
+	constexpr int NUM_CONSUMERS = 1;
+	constexpr int ITERATIONS = 10;
+
+	auto producer = [&](int id,int it){
+				queue.push(it);
+			};
+	
+	int n = 0;
+	auto consumer = [&](int id,int it){
+				int out;
+				
+				while (!queue.try_top(out) && out < ITERATIONS){
+					ASSERT_EQ(out,n);
+					n++;
+				}
+			};
+
+	launchThreads(producer,consumer,NUM_PRODUCERS,NUM_CONSUMERS,ITERATIONS);
+
+}

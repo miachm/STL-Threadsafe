@@ -39,12 +39,12 @@ namespace std
                     }
                 }
             
-                auto insert(const K & key,V & value){
+                bool insert(const K & key,V & value){
                     std::unique_lock<std::shared_mutex> lock(mutex);
-                    return internal_map.insert(std::make_pair(key,value));
+                    return internal_map.insert(std::make_pair(key,value)).second;
                 }
             
-                auto erase(const K & key){
+                size_t erase(const K & key){
                     std::unique_lock<std::shared_mutex> lock(mutex);
                     return internal_map.erase(key);
                 }

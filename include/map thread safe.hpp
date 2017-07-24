@@ -70,6 +70,18 @@ namespace std
 			else
 				return it->second;
 		}
+
+		bool remove(const K& key,const V& value){
+			std::unique_lock<std::shared_mutex> lock(mutex);
+			auto it = internal_map.find(key);
+			if (it == internal_map.end() || it->second != value)
+				return false
+			else
+			{
+				internal_map.erase(it);
+				return true;
+			}
+		}
         };
     }
 }

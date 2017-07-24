@@ -60,7 +60,16 @@ namespace std
                     return it == internal_map.end();
                 }
                 
-                
+                V putIfAbsent(const K& key,const V& value){
+			std::unique_lock<std::shared_mutex> lock(mutex);
+			auto it = internal_map.find(key);
+			if (it == internal_map.end()){
+				internal_map.insert(std::make_pair(key,value));
+				return value;
+			}
+			else
+				return it->second;
+		}
         };
     }
 }

@@ -8,3 +8,5 @@ stack:
 
 queue:
 	g++ -o queue $(CC_LINKS_FLAGS) testqueue.cpp
+priorityqueue:
+	g++ -o priorityqueue $(CC_LINKS_FLAGS) testpriorityqueue.cpp

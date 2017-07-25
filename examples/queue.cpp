@@ -7,7 +7,7 @@
 constexpr int NUM_WORKERS = 4;
 constexpr double EXIT = 0.0;
 
-void printResult(double value){
+void printResult(double value,double operation){
 	std::stringstream stream;
 	stream << "Sqrt of " << value << " is " << operation << std::endl;
 
@@ -19,7 +19,7 @@ void worker(std::threadsafe::queue<double> &tasks){
 	tasks.wait_pop(operation);
 	while (operation != EXIT){
 		double sqrt = std::sqrt(operation);
-		printResult(sqrt);
+		printResult(sqrt,operation);
 		tasks.wait_pop(operation);
 	}
 }
@@ -49,4 +49,4 @@ int main(){
 	launchThreads(threads,tasks);
 	addWork(tasks);
 	wait(threads,tasks);
-}`
+}

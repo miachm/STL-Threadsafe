@@ -2,7 +2,7 @@
 #include <cmath>
 #include <sstream>
 #include <thread>
-#include "queue thread safe.hpp"
+#include "queue-threadsafe.hpp"
 
 constexpr int NUM_WORKERS = 4;
 constexpr double EXIT = 0.0;

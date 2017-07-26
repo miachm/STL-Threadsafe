@@ -1,6 +1,6 @@
 #ifndef DOUBLE_LINEAL_CONTAINER_THREAD_SAFE
 #define DOUBLE_LINEAL_CONTAINER_THREAD_SAFE
-#include "lineal container thread safe.hpp"
+#include "lineal_container-threadsafe.hpp"
 namespace std
 {
     namespace threadsafe

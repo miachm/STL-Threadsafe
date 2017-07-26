@@ -1,5 +1,5 @@
 #include <iostream>
-#include "stack thread safe.hpp"
+#include "stack-threadsafe.hpp"
 
 constexpr int NUM_WORKERS = 4;
 constexpr int INCR = 3;

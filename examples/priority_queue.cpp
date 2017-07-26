@@ -1,6 +1,6 @@
 #include <iostream>
 #include <thread>
-#include "priority_queue thread safe.hpp"
+#include "priority_queue-threadsafe.hpp"
 
 int main(){
 	std::threadsafe::priority_queue<int> bids;

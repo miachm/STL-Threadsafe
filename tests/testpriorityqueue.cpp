@@ -1,4 +1,4 @@
-#include "priority_queue thread safe.hpp"
+#include "priority_queue-threadsafe.hpp"
 #include "gtest/gtest.h"
 #include <thread>
 #include <vector>

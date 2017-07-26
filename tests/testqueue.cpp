@@ -1,4 +1,4 @@
-#include "queue thread safe.hpp"
+#include "queue-threadsafe.hpp"
 #include "gtest/gtest.h"
 #include <thread>
 #include <algorithm>

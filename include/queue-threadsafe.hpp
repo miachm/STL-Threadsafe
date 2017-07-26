@@ -2,7 +2,7 @@
 #define QUEUE_THREAD_SAFE
 
 #include <queue>
-#include "internal/double lineal container thread safe.hpp"
+#include "internal/double_lineal_container-threadsafe.hpp"
 
 namespace std
 {

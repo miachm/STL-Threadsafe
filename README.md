@@ -1,6 +1,34 @@
 # STL-Threadsafe
 
-A threadsafe implementation of Queue, Stack and Priority Queue.
+A threadsafe implementation of the standard containers.
+
+You should know the STL library of C++ (map, stack, queue...). This library is a wrapper of these containers adding safety and other mechanisms needed for concurrent programming.
+
+A example of these mechanisms is the queue class, where you can define the behaviour in case the queue is empty
+
+```c++
+
+std::threadsafe::queue<int> queue;
+int out;
+
+//...
+
+queue.wait_pop(out); // if the queue is empty, will block
+
+try{
+	queue.wait_pop(out,std::chrono::milliseconds(10)); // if the queue is empty, will block 10 milliseconds as maximum
+} catch(std::threadsafe::Time_Expired e){
+	std::cerr << "Time expired!" << std::endl;
+}
+
+if (!queue.try_pop(out)){ // If the queue is empty, will return false
+	std::cerr << "Empty queue" << std::endl;
+}
+```
+
+# Usage
+
+A simple example of producer/consumer, consumer has to take the input, do some maths operations and print it in the stdout. Repeat until that receives a special code.
 
 ```c++
 
@@ -21,8 +49,11 @@ void producer(std::threadsafe::queue<double> &tasks){
 	tasks.push(EXIT);
 }
 ```
+There are more examples of usage in the example's folder.
 
-The next operations are supported:
+# API
+
+Stack, Queue and Priority_Queue share the same methods:
 
   - Push: Push an element in the container.
   - try_pop(output): Try pop out an element and put in the output variable. Return false if the container is empty.
@@ -35,6 +66,10 @@ The next operations are supported:
   - size(): Returns the number of elements.
   - empty(): Returns true if the container is empty.
   
-  # Usage
+  Besides, Queue has wait_back() and try_back() methods, equivalent to wait_top() and try_top() but looking the last position of the queue.
   
-  It's a header library. You only has to include the headers in your project.
+  # Installation
+  
+  It's a header library. So, the installation is pretty straightforward.
+  
+  Download/clone the repository, add the include folder to your project and you can use it. Be aware that you need compiler with C++14 support

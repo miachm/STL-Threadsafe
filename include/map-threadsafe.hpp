@@ -26,7 +26,7 @@ namespace std
                 map(const std::map<K,V> &m) : internal_map(m){}
                 map(const std::threadsafe::map &m) = delete;
 
-                V* get(const K& key)
+                V get(const K& key)
                 {
                     std::shared_lock<std::shared_mutex> lock(mutex);
                     auto it = internal_map.find(key);
@@ -35,7 +35,7 @@ namespace std
                         return nullptr;
                     }
                     else{
-                        return new V(it->second);
+                        return V(it->second);
                     }
                 }
             

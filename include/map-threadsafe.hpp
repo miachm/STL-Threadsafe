@@ -77,6 +77,19 @@ namespace std
 				return it->second;
 		}
 
+		template<typename Iterator>
+		Iterator getValues(Iterator begin,Iterator end){
+			std::shared_lock<std::shared_mutex> lock(mutex);
+			auto it = internal_map.begin();
+			while (begin != end && it != internal_map.end()){
+				*begin = *it;
+				it++;
+				begin++;
+			}
+
+			return begin;
+		}
+
 		bool remove(const K& key,const V& value){
 			std::unique_lock<std::shared_mutex> lock(mutex);
 			auto it = internal_map.find(key);

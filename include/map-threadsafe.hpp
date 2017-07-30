@@ -26,17 +26,18 @@ namespace std
                 map(const std::map<K,V> &m) : internal_map(m){}
                 map(const std::threadsafe::map &m) = delete;
 
-                V get(const K& key)
+                bool get(const K& key,V& output)
                 {
                     std::shared_lock<std::shared_mutex> lock(mutex);
                     auto it = internal_map.find(key);
                     if (it == internal_map.end())
                     {
-                        return nullptr;
+                        return false;
                     }
                     else{
-                        return V(it->second);
-                    }
+                        output = it->second;
+                    	return true;
+		    }
                 }
 
 		V operator[](const K& key){

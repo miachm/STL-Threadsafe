@@ -38,6 +38,10 @@ namespace std
                         return V(it->second);
                     }
                 }
+
+		V operator[](const K& key){
+			return get(key);
+		}
             
                 bool insert(const K & key,V & value){
                     std::unique_lock<std::shared_mutex> lock(mutex);

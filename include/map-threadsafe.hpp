@@ -60,7 +60,12 @@ namespace std
                     auto it = internal_map.find(key);
                     return it == internal_map.end();
                 }
-                
+
+		void clear(){
+			std::unique_lock<std::shared_mutex> lock(mutex);
+			internal_map.clear();
+		}                
+
                 V putIfAbsent(const K& key,const V& value){
 			std::unique_lock<std::shared_mutex> lock(mutex);
 			auto it = internal_map.find(key);

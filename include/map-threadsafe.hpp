@@ -82,6 +82,18 @@ namespace std
 				return true;
 			}
 		}
+
+		bool replace(const K& key,const V& value,V &output){
+			std::unique_lock<std::shared_mutex> lock(mutex);
+			
+			auto it = internal_map.find(key);
+			if (it != internal_map.end()){
+				output = it-> second;
+				it->second = value;
+				return true;
+			}
+			return false;
+		}
         };
     }
 }

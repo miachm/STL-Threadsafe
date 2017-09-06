@@ -11,15 +11,19 @@ A example of these mechanisms is the queue class, where you can define the behav
 std::threadsafe::queue<int> queue;
 int out;
 
-//...
+// Wait for a item
 
 queue.wait_pop(out); // if the queue is empty, will block
+
+// Wait with a time limit
 
 try{
 	queue.wait_pop(out,std::chrono::milliseconds(10)); // if the queue is empty, will block 10 milliseconds as maximum
 } catch(std::threadsafe::Time_Expired e){
 	std::cerr << "Time expired!" << std::endl;
 }
+
+// Non-blocking pop
 
 if (!queue.try_pop(out)){ // If the queue is empty, will return false
 	std::cerr << "Empty queue" << std::endl;
